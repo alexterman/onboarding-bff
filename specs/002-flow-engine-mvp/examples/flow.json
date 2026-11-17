@@ -1,0 +1,187 @@
+{
+  "id": "customer-onboarding",
+  "type": "PERSONAL",
+  "version": 1,
+  "startStep": "phone",
+  "steps": [
+    {
+      "id": "phone",
+      "type": "USER_INPUT",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone"
+        ]
+      }
+    },
+    {
+      "id": "captcha",
+      "type": "CHALLENGE",
+      "challengeType": "CAPTCHA",
+      "provider": "TURNSTILE",
+      "config": {
+        "siteKey": "${turnstile.siteKey}"
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      }
+    },
+    {
+      "id": "initiate-otp",
+      "type": "CHALLENGE",
+      "challengeType": "OTP_INITIATE",
+      "schema": {
+        "type": "object",
+        "properties": {}
+      },
+      "integration": {
+        "type": "sync-rest",
+        "mapping": {
+          "phone": "$.stored.phone"
+        },
+        "connectivity": {
+          "url": "${otp.url}",
+          "path": "/send",
+          "method": "POST",
+          "headers": {
+            "X-Onboarding-ID": "${onboardingId}"
+          },
+          "payload": {
+            "phone": "${phone}"
+          }
+        }
+      }
+    },
+    {
+      "id": "confirm-otp",
+      "type": "USER_INPUT",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 4
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
+      "integration": {
+        "type": "sync-rest",
+        "mapping": {
+          "phone": "$.stored.phone",
+          "code": "$.userInput.code"
+        },
+        "connectivity": {
+          "url": "${otp.url}",
+          "path": "/verify",
+          "method": "POST",
+          "headers": {
+            "X-Onboarding-ID": "${onboardingId}"
+          },
+          "payload": {
+            "phone": "${phone}",
+            "code": "${code}"
+          }
+        }
+      },
+      "maxAttempts": 3
+    },
+    {
+      "id": "address",
+      "type": "USER_INPUT",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "street": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "street",
+          "city",
+          "country"
+        ]
+      }
+    },
+    {
+      "id": "risk",
+      "type": "INTERNAL",
+      "integration": {
+        "type": "async-rest",
+        "mapping": {
+          "phone": "$.stored.phone",
+          "address": "$.stored.address"
+        },
+        "connectivity": {
+          "url": "${risk.url}",
+          "path": "/assess",
+          "method": "POST",
+          "headers": {
+            "X-Onboarding-ID": "${onboardingId}"
+          },
+          "payload": {
+            "phone": "${phone}",
+            "address": "${address}"
+          },
+          "pollPath": "/assess/{pollingId}",
+          "pollIntervalSeconds": 5
+        }
+      },
+      "timeoutSeconds": 300
+    }
+  ],
+  "transitions": [
+    {
+      "from": "phone",
+      "to": "captcha"
+    },
+    {
+      "from": "captcha",
+      "to": "initiate-otp"
+    },
+    {
+      "from": "initiate-otp",
+      "to": "confirm-otp"
+    },
+    {
+      "from": "confirm-otp",
+      "to": "address"
+    },
+    {
+      "from": "address",
+      "to": "risk"
+    },
+    {
+      "from": "risk",
+      "to": "COMPLETE_ONBOARDING",
+      "when": "result.score >= 70"
+    },
+    {
+      "from": "risk",
+      "to": "REJECT_ONBOARDING",
+      "when": "result.score < 70"
+    }
+  ]
+}

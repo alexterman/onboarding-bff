@@ -1,0 +1,14 @@
+quarkus:
+  application:
+    name: onboarding-bff
+  shutdown:
+    delay-enabled: true
+    delay: 5s
+    timeout: 10s
+  http:
+    port: ${HTTP_PORT:8100}
+    test-port: 18100
+  jackson:
+    serialization-inclusion: NON_NULL
+  devservices:
+    enabled: false
