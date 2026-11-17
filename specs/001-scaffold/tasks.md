@@ -22,7 +22,7 @@ Open Claude in the **parent `onboarding-bff/` directory**, not inside `onboardin
 
 ## HTTP and test foundations
 
-- [ ] **T007 — Expose health checks.** Add Quarkus health endpoints and verify the service responds when started; keep secrets/PII out of diagnostics.
+- [x] **T007 — Expose health checks.** Add Quarkus health endpoints and verify the service responds when started; keep secrets/PII out of diagnostics.
 - [ ] **T008 — Set up JSON contracts.** Configure Jackson and select a compatible JSON Schema validation dependency; add unit tests for JSON object serialization and validation of valid/invalid sample input (not the full flow schema).
 - [ ] **T009 — Define API-first contracts and skeleton.** Write an OpenAPI contract for starting onboarding, fetching the next step, and submitting a step, with the agreed generic envelopes (`session`, `stepId`, `userInput`, `additionalAttributes` for requests; `session`, `nextStep`, `additionalAttributes` for success; separate error payloads). Model `userInput` and `nextStep.schema` as dynamic JSON objects. Add `/api/v1/onboardings` resource placeholders aligned with the contract; smoke-test with REST Assured. Do not implement flow execution yet.
 - [ ] **T010 — Set up unit/integration testing.** Configure JUnit 5, REST Assured, AssertJ, Quarkus test support and Testcontainers; ensure the DB and API tests run from `./gradlew test` without external managed services.
