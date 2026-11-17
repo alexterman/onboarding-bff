@@ -96,6 +96,8 @@ The JAX-RS interface and models are generated from `openapi.yaml` into `build/ge
 
 The tests do not use the compose database. Reports: `build/reports/tests/test/index.html`.
 
+`./gradlew build` (and `check`) also validates the OpenAPI contract with `openApiValidate`, so an invalid `openapi.yaml` fails the build. Run it alone with `./gradlew openApiValidate`.
+
 If Testcontainers cannot find Docker when using Podman, point it at the Podman socket:
 
 ```sh

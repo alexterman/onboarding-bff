@@ -86,3 +86,11 @@ openApiGenerate {
 sourceSets["main"].kotlin.srcDir(layout.buildDirectory.dir("generated/openapi/src/main/kotlin"))
 
 tasks.named("compileKotlin") { dependsOn("openApiGenerate") }
+
+// Fails the build when the contract is not a valid OpenAPI document.
+openApiValidate {
+    inputSpec.set("$projectDir/src/main/resources/META-INF/openapi.yaml")
+    recommend.set(true)
+}
+
+tasks.named("check") { dependsOn("openApiValidate") }
