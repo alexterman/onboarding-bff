@@ -47,6 +47,67 @@ onboarding-bff/
 
 **Note:** This is a lightweight SDD document layout, not a full Spec Kit CLI installation; a constitution is **not required** for this project. No live editing of flows in v1; changes require redeployment. The historical product spec and decision log are retained rather than discarded when splitting features.
 
+## Local quickstart
+
+### Prerequisites
+
+- JDK 25 on your `PATH` (or `JAVA_HOME`), e.g. `brew install openjdk@25`.
+- Podman with `podman-compose` (`brew install podman podman-compose`) **or** Docker with the compose plugin. Docker/Podman is also required by the tests (Testcontainers).
+
+### 1. Configure
+
+```sh
+cp .env.example .env     # git-ignored; infrastructure settings only (HTTP port, PostgreSQL)
+```
+
+`application.yml` reads every environment-specific value as `${ENV_VAR:default}`. `DB_PASSWORD` has no default and the app will not start without it; `./gradlew quarkusDev` picks it up from `.env`. Customer integrations (CAPTCHA, OTP, risk) are not configured here: they live in flow JSON per step.
+
+### 2. Start PostgreSQL
+
+```sh
+podman machine init      # once (macOS/Windows)
+podman machine start     # after each reboot
+podman compose up -d     # starts PostgreSQL 15.6 on localhost:5432 (docker compose up -d with Docker)
+```
+
+### 3. Run the service (migrations run on startup)
+
+```sh
+./gradlew quarkusDev
+```
+
+Liquibase applies `src/main/resources/db/changeLog.xml` automatically when the app starts. The service listens on `http://localhost:8100`:
+
+| URL | What |
+|---|---|
+| `/q/health` (`/live`, `/ready`, `/started`) | Health checks (readiness includes the database) |
+| `/swagger` | OpenAPI contract (`src/main/resources/META-INF/openapi.yaml`) |
+| `/q/metrics` | Prometheus metrics |
+| `POST /api/v1/onboardings`, `/next-step`, `/steps` | Placeholders; answer `501` until feature 002 |
+
+The JAX-RS interface and models are generated from `openapi.yaml` into `build/generated/openapi` on every build.
+
+### 4. Run the tests
+
+```sh
+./gradlew test           # integration tests start their own PostgreSQL via Testcontainers
+./gradlew cleanTest test # force a re-run; Gradle skips unchanged, already-passed tests
+```
+
+The tests do not use the compose database. Reports: `build/reports/tests/test/index.html`.
+
+If Testcontainers cannot find Docker when using Podman, point it at the Podman socket:
+
+```sh
+export DOCKER_HOST=unix://$(podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}')
+```
+
+### Stop
+
+```sh
+podman compose down      # add -v to also delete the database volume
+```
+
 ## Module boundaries
 
 Main Kotlin package: `onboarding.bff` (`src/main/kotlin/onboarding/bff/`). One deployable service, organised as internal packages. These are placeholders only; behavior arrives in feature 002.

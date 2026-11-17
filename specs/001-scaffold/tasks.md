@@ -30,7 +30,7 @@ Open Claude in the **parent `onboarding-bff/` directory**, not inside `onboardin
 ## Delivery and review
 
 - [x] **T011 — Add CI.** Add a GitHub Actions pipeline that checks out the repository, sets up Java, runs Gradle build/test, and surfaces failing tests; use the Gradle wrapper and avoid storing secrets in workflow files.
-- [ ] **T012 — Document local quickstart.** Add exact steps to start PostgreSQL, run migrations, start the service, and execute tests. Include a minimal local configuration template (YAML/`.env.example`) and prerequisites.
+- [x] **T012 — Document local quickstart.** Add exact steps to start PostgreSQL, run migrations, start the service, and execute tests. Include a minimal local configuration template (YAML/`.env.example`) and prerequisites.
 - [ ] **T013 — Scaffold acceptance gate.** From a clean checkout, verify Gradle build/start, PostgreSQL + Liquibase migration, database access via the Testcontainers-backed integration tests, health endpoint, OpenAPI contract validation, JSON validation, REST Assured smoke test, and CI pass. Record any deferred decisions without silently selecting them.
 
 ## Not part of Milestone 1
