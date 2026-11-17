@@ -44,4 +44,3 @@ export DOCKER_HOST=unix://$(podman machine inspect --format '{{.ConnectionInfo.P
 - [`docs/`](docs/): product requirements, architecture, security requirements, decisions and open questions.
 - [`specs/001-scaffold/`](specs/001-scaffold/): the scaffold feature (tasks and acceptance results).
 - [`specs/002-flow-engine-mvp/`](specs/002-flow-engine-mvp/): the flow engine feature.
-- `./scripts/update_sdd.sh` refreshes `docs/` and `specs/` from `~/Downloads/onboarding-engine-sdd.zip` without touching code.
