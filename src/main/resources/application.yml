@@ -14,6 +14,9 @@ quarkus:
     enabled: false
   log:
     level: ${LOG_LEVEL:INFO}
+  liquibase:
+    migrate-at-start: true
+    change-log: db/changeLog.xml
   datasource:
     db-kind: postgresql
     username: ${DB_USERNAME:onboarding}
