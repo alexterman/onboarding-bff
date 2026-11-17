@@ -17,7 +17,7 @@ T001 must install `scripts/update_sdd.sh` at the repository root. Running it sho
 ## Acceptance criteria
 
 1. A Gradle Kotlin DSL Quarkus application builds and runs with infrastructure-only environment-specific settings in a YAML configuration file (`application.yml`) and no committed secrets. Customer-specific CAPTCHA/OTP/risk connector settings must **not** be hardcoded into the application YAML or config classes; those are configured per step in flow JSON, with protected external secret references.
-3. PostgreSQL is accessible via plain JDBC; a Liquibase migration runs and a Testcontainers integration test proves a database read/write.
+3. PostgreSQL is accessible via plain JDBC; a Liquibase migration runs at startup. No dedicated database test: integration tests (`@QuarkusTest` + Testcontainers PostgreSQL) boot the app, which proves migrations and JDBC work, as in the Plumery services.
 4. Health endpoints and placeholders for start, next-step and submit-step APIs are reachable.
 5. An OpenAPI document models the generic `session`, `stepId`, `userInput`, `additionalAttributes` request; success has `session`, `nextStep`, `additionalAttributes`; failures use a separate error envelope. Dynamic input and step schema remain JSON objects.
 6. Jackson/JSON Schema validation, JUnit 5, REST Assured, Testcontainers and AssertJ are configured and verified in tests.

@@ -18,7 +18,7 @@ Open Claude in the **parent `onboarding-bff/` directory**, not inside `onboardin
 
 - [x] **T004 — Configure JDBC/PostgreSQL.** Add Quarkus JDBC PostgreSQL and datasource configuration (no Hibernate/ORM); confirm the application can connect to a local PostgreSQL instance.
 - [x] **T005 — Initialize Liquibase.** Configure Liquibase startup migrations and a first changelog with a minimal migration marker or scaffold-owned table; defer detailed onboarding data model to Milestone 2.
-- [ ] **T006 — Exercise database access.** Add a small JDBC repository or connectivity probe and a Testcontainers PostgreSQL integration test proving migrations run and a basic write/read round-trip succeeds.
+- [x] **T006 — Exercise database access.** **Decision (owner): no dedicated database test and no throwaway repository/probe class.** Following the Plumery services, there is no test that merely exercises migrations or a write/read on a placeholder table. Migrations and JDBC access are proven implicitly: every `@QuarkusTest` boots against a Testcontainers PostgreSQL (`PostgresTestResource`) with `migrate-at-start`, so the app cannot start unless Liquibase and the datasource work, and real repositories/APIs added later are tested against it. The Testcontainers resource and dependency are added in T010 when the first API tests need them. Verified manually in T004/T005: the app connects to local PostgreSQL and Liquibase creates `scaffold_marker`. No code was added for this task.
 
 ## HTTP and test foundations
 
@@ -31,7 +31,7 @@ Open Claude in the **parent `onboarding-bff/` directory**, not inside `onboardin
 
 - [ ] **T011 — Add CI.** Add a GitHub Actions pipeline that checks out the repository, sets up Java, runs Gradle build/test, and surfaces failing tests; use the Gradle wrapper and avoid storing secrets in workflow files.
 - [ ] **T012 — Document local quickstart.** Add exact steps to start PostgreSQL, run migrations, start the service, and execute tests. Include a minimal local configuration template (YAML/`.env.example`) and prerequisites.
-- [ ] **T013 — Scaffold acceptance gate.** From a clean checkout, verify Gradle build/start, PostgreSQL + Liquibase migration, JDBC round-trip via Testcontainers, health endpoint, OpenAPI contract validation, JSON validation, REST Assured smoke test, and CI pass. Record any deferred decisions without silently selecting them.
+- [ ] **T013 — Scaffold acceptance gate.** From a clean checkout, verify Gradle build/start, PostgreSQL + Liquibase migration, database access via the Testcontainers-backed integration tests, health endpoint, OpenAPI contract validation, JSON validation, REST Assured smoke test, and CI pass. Record any deferred decisions without silently selecting them.
 
 ## Not part of Milestone 1
 

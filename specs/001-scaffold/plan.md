@@ -37,7 +37,7 @@ Gradle group ID is `io.altera`; the main Kotlin package is `onboarding.bff` (`sr
 
 ## Acceptance gate
 
-Working Gradle build, PostgreSQL/JDBC with Liquibase, Testcontainers database round-trip, OpenAPI-validated API placeholders, health endpoint, tests and CI from clean checkout.
+Working Gradle build, PostgreSQL/JDBC with Liquibase, database access proven by Testcontainers-backed integration tests (no dedicated DB test), OpenAPI-validated API placeholders, health endpoint, tests and CI from clean checkout.
 
 ## Deferred
 
