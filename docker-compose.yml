@@ -1,0 +1,28 @@
+# Local infrastructure, run with Podman:
+#   brew install podman podman-compose      (once)
+#   podman machine init                     (once)
+#   podman machine start                    (after each reboot)
+#   cp .env.example .env                    (once; DB_PASSWORD is required)
+#   podman compose up -d                    start services
+#   podman compose down                     stop services (add -v to drop data)
+# Credentials come from .env; keep them in sync with the application.
+services:
+  postgres:
+    image: postgres:15.6
+    container_name: onboarding-bff-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-onboarding}
+      POSTGRES_USER: ${DB_USERNAME:-onboarding}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set (see .env.example)}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres-data:
