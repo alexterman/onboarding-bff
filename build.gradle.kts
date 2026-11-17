@@ -18,6 +18,7 @@ dependencies {
     implementation("io.quarkus:quarkus-config-yaml")
     implementation("io.quarkus:quarkus-rest")
     implementation("io.quarkus:quarkus-rest-jackson")
+    implementation("com.networknt:json-schema-validator:2.0.8")
     implementation("io.quarkus:quarkus-jdbc-postgresql")
     implementation("io.quarkus:quarkus-liquibase")
     implementation("io.quarkus:quarkus-smallrye-health")
