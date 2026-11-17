@@ -14,6 +14,8 @@ quarkus:
     enabled: false
   log:
     level: ${LOG_LEVEL:INFO}
+  smallrye-openapi:
+    path: /swagger
   liquibase:
     migrate-at-start: true
     change-log: db/changeLog.xml
@@ -24,3 +26,9 @@ quarkus:
     password: ${DB_PASSWORD}
     jdbc:
       url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:onboarding}?currentSchema=${DB_SCHEMA:public}
+
+mp:
+  openapi:
+    scan:
+      # The hand-written contract (META-INF/openapi.yaml) is authoritative: API-first, no generated model.
+      disable: true

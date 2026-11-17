@@ -1,0 +1,194 @@
+openapi: 3.0.3
+info:
+  title: Onboarding API
+  version: 0.1.0
+  description: |
+    Generic onboarding API. The client talks only to this API; the server decides which step is allowed next.
+    Paths and field names are candidates pending the open decisions in `specs/002-flow-engine-mvp/contracts/README.md`.
+    Dynamic payloads (`userInput`, `additionalAttributes`, `nextStep.schema`) are free-form JSON objects;
+    `userInput` is validated at runtime against the complete JSON Schema returned for that step.
+    In the scaffold all operations are placeholders and answer 501.
+servers:
+  - url: /
+tags:
+  - name: onboardings
+paths:
+  /api/v1/onboardings:
+    post:
+      tags: [onboardings]
+      operationId: startOnboarding
+      summary: Start an onboarding for a server-configured flow type
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartOnboardingRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/NextStepResponse'
+        '400':
+          $ref: '#/components/responses/Error'
+        '501':
+          $ref: '#/components/responses/Error'
+  /api/v1/onboardings/next-step:
+    post:
+      tags: [onboardings]
+      operationId: getNextStep
+      summary: Fetch the current next step (also used to poll while the step is WAIT)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NextStepRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/NextStepResponse'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '501':
+          $ref: '#/components/responses/Error'
+  /api/v1/onboardings/steps:
+    post:
+      tags: [onboardings]
+      operationId: submitStep
+      summary: Submit the user input for the current step
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitStepRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/NextStepResponse'
+        '400':
+          $ref: '#/components/responses/Error'
+        '401':
+          $ref: '#/components/responses/Error'
+        '403':
+          $ref: '#/components/responses/Error'
+        '501':
+          $ref: '#/components/responses/Error'
+components:
+  responses:
+    NextStepResponse:
+      description: Refreshed session, the next user action and optional additional attributes
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OnboardingResponse'
+    Error:
+      description: Failure; never contains `nextStep`
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    JsonObject:
+      type: object
+      additionalProperties: true
+      description: Free-form JSON object
+    Session:
+      type: object
+      required: [jwt]
+      properties:
+        jwt:
+          type: string
+          description: Signed session JWT; authoritative. The `onboardingId` is taken from its validated claims only.
+    StartOnboardingRequest:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          description: Flow type; the server resolves the configured flow. Arbitrary flow definitions are never accepted.
+        additionalAttributes:
+          $ref: '#/components/schemas/JsonObject'
+    NextStepRequest:
+      type: object
+      required: [session]
+      properties:
+        session:
+          $ref: '#/components/schemas/Session'
+        additionalAttributes:
+          $ref: '#/components/schemas/JsonObject'
+    SubmitStepRequest:
+      type: object
+      required: [stepId, session, userInput]
+      properties:
+        stepId:
+          type: string
+        session:
+          $ref: '#/components/schemas/Session'
+        userInput:
+          allOf:
+            - $ref: '#/components/schemas/JsonObject'
+          description: Dynamic input; must validate against the complete JSON Schema returned for the step.
+        additionalAttributes:
+          $ref: '#/components/schemas/JsonObject'
+    OnboardingResponse:
+      type: object
+      required: [session, nextStep]
+      properties:
+        session:
+          $ref: '#/components/schemas/Session'
+        nextStep:
+          $ref: '#/components/schemas/NextStep'
+        additionalAttributes:
+          $ref: '#/components/schemas/JsonObject'
+    NextStep:
+      oneOf:
+        - $ref: '#/components/schemas/InputStep'
+        - $ref: '#/components/schemas/WaitStep'
+        - $ref: '#/components/schemas/CompleteOnboardingStep'
+    InputStep:
+      type: object
+      required: [id, type, schema]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [USER_INPUT, CHALLENGE]
+        schema:
+          allOf:
+            - $ref: '#/components/schemas/JsonObject'
+          description: Complete JSON Schema for the step input (not a field list or a reference). Dialect is still open.
+    WaitStep:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum: [WAIT]
+        retryAfterSeconds:
+          type: integer
+          minimum: 0
+          description: Optional polling advice, not a guarantee
+    CompleteOnboardingStep:
+      type: object
+      required: [type]
+      properties:
+        type:
+          type: string
+          enum: [COMPLETE_ONBOARDING]
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              example: ONBOARDING_REJECTED
+            message:
+              type: string
+              description: Safe for end users; never exposes internal decisions
