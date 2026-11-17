@@ -9,7 +9,7 @@
 - `INTERNAL` risk is engine-executed, not shown to the app. Its async REST connector provides a polling ID; engine polls and app receives `WAIT` until the result. Exact pending HTTP representation remains deferred.
 - Success (risk score >= 70): HTTP 200 response `nextStep.type = COMPLETE_ONBOARDING`; rejection: error payload without `nextStep`. Both are terminal **outcomes**, not steps.
 - The `mapping`, `connectivity` placeholders, OTP initiation challenge payload, and exact response mapping rules remain illustrative. Their precise wire contracts will be determined during implementation, not architecture.
-- `integration` is optional and omitted for pure data-collection steps; no extra `onEnter` or `onSubmit` trigger is required.
+- `integration` is optional and omitted for pure data-collection steps; no extra `onEnter` or `onSubmit` trigger is required. Per-customer connectors (OTP, risk, async REST) and CAPTCHA provider/public settings belong in this flow JSON, **not `application.yml`**; resolve sensitive credentials from secure external references.
 - Each step submission is persisted with `submission_version` integer, timestamp and data/outcome. Flow/schema versioning and database migrations are different concepts.
 
 **Agreed to defer:** Exact connector response formats (including whether pending uses HTTP 202); error mapping; duplicate request protections; detailed implementation/persistence strategies.

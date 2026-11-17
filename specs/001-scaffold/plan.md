@@ -27,6 +27,8 @@ Use one deployable Kotlin + Quarkus application and Gradle Kotlin DSL. Set up AP
 | CAPTCHA default | Cloudflare Turnstile, replaceable provider |
 | Conditional branching | CEL expressions; concrete Java implementation to choose |
 
+**Customer integrations (critical boundary):** `application.yml` is for service infrastructure (Quarkus HTTP/runtime, PostgreSQL and other operational settings), **not per-customer or per-provider connectors**. Do **not** configure `onboarding.integrations.captcha`, `otp-delivery`, `async-connector`, or equivalent named connector sections in application YAML or application configuration classes. The versioned flow JSON is authoritative for each step’s optional `integration: { type, mapping, connectivity }`, including REST endpoint, HTTP method, path, headers and payload. CAPTCHA provider/public challenge configuration belongs in its flow step. Runtime secrets can be looked up securely by symbolic reference using environment variables or a secret store, not hardcoded in flow files or exposed to clients. Scaffold does not implement external connectors.
+
 **Deployment:** One deployable service is the v1 planning assumption (not a separately ratified topology). Organize responsibilities as internal packages/modules. **Deferred:** Scheduler/worker technology for async REST polling and expiry cleanup; deployment environment; exact connector wire contracts. No broker dependency is required inside the engine.
 
 ## Architecture boundaries

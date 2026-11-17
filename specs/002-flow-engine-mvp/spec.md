@@ -12,7 +12,7 @@ Run the first valuable configurable onboarding journey, end to end, through the 
 
 1. Load a versioned JSON flow at startup, validate its `startStep`, step schemas and separately defined transitions. One active version per flow type in v1; redeploy to change flow.
 2. Phone input is stored and later steps may access only explicitly mapped data.
-3. The CAPTCHA step supplies provider/public config to the client and validates the response with default provider Cloudflare Turnstile. CAPTCHA precedes sending any SMS.
+3. The CAPTCHA step supplies provider/public config **from its flow JSON step definition** to the client and validates the response with default provider Cloudflare Turnstile; protected verification credentials are obtained from secret references, never sent to the app. CAPTCHA precedes sending any SMS.
 4. When `initiate-otp` executes, its optional `sync-rest` integration sends an SMS, and the engine returns the OTP confirmation form. Integration execution occurs when its step executes.
 5. On `confirm-otp`, invoke configured REST validation, enforce configured attempt policy and advance on valid input.
 6. Persist session state and every submitted step attempt with integer `submission_version`, timestamp, data and result. Resume by validated JWT `onboardingId` when an unexpired session exists.

@@ -91,7 +91,7 @@ A wrong OTP is a recoverable validation failure: it may return the same phone-ve
 
 ## Internal integration mappings (not sent to the mobile app)
 
-Company-supplied flow configuration declares which REST endpoint or async REST connector is invoked, which **explicitly allowlisted/mapped** fields from current input, trusted stored data, session context and permitted additional attributes are forwarded, and how outputs are used. Internal results can drive transitions without being exposed. Only selected integration outputs map to response `additionalAttributes` when the mobile app needs them. Never blindly forward entire request headers, secrets, or provider payloads.
+Company-supplied **flow JSON (not application.yml)** declares which REST endpoint or async REST connector is invoked, which **explicitly allowlisted/mapped** fields from current input, trusted stored data, session context and permitted additional attributes are forwarded, and how outputs are used. Internal results can drive transitions without being exposed. Only selected integration outputs map to response `additionalAttributes` when the mobile app needs them. Never blindly forward entire request headers, secrets, or provider payloads.
 
 Example pattern: phone collection stores the number and triggers a protected OTP-send action; phone verification presents a code schema and invokes a configured synchronous REST validator; on valid response advance to address collection. The mobile communicates **only** with the onboarding API.
 

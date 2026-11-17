@@ -8,7 +8,7 @@
 - Load flow JSON at startup, validate schema, ensure unique step IDs and resolvable forward-only transitions.
 - Flow controller uses persisted history to determine next active step; step-specific JSON Schema validates `userInput`.
 - Step handlers: `USER_INPUT` and `CHALLENGE`; integrations are optional per step and run when the step executes.
-- External REST integration configuration uses `type`, `mapping` and `connectivity` (URL/path/method/headers/payload); exact mapping grammar is an implementation choice.
+- External REST integration configuration is **exclusively per step in versioned flow JSON**: optional `integration` with `type`, `mapping` and `connectivity` (URL/path/method/headers/payload). **No named OTP, risk, async-connector, or CAPTCHA connector configuration in `application.yml`.** Protected credentials are resolved via secret references; exact mapping grammar is an implementation choice.
 - JWT identifies `onboardingId`; store every submission attempt with `submission_version`, timestamp and outcome, and manage expiration/deletion.
 - Cloudflare Turnstile default challenge; OTP send/verification via configurable REST connectors, with multi-layer abuse/cost controls.
 - Transition routing lives separately from steps; use CEL for conditional transitions when they are added.

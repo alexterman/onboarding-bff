@@ -1,0 +1,7 @@
+# Overrides for integration tests (merged over src/main/resources/application.yml).
+# Inert values only; Testcontainers resources supply the real datasource at runtime.
+quarkus:
+  datasource:
+    password: test
+  log:
+    level: WARN
