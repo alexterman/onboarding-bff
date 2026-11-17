@@ -47,6 +47,20 @@ onboarding-bff/
 
 **Note:** This is a lightweight SDD document layout, not a full Spec Kit CLI installation; a constitution is **not required** for this project. No live editing of flows in v1; changes require redeployment. The historical product spec and decision log are retained rather than discarded when splitting features.
 
+## Module boundaries
+
+Main Kotlin package: `onboarding.bff` (`src/main/kotlin/onboarding/bff/`). One deployable service, organised as internal packages. These are placeholders only; behavior arrives in feature 002.
+
+| Package | Intended responsibility |
+|---|---|
+| `api` | HTTP resources (`/api/v1/onboardings`), request/response envelopes, error mapping; generic contract only |
+| `flow` | Flow definition loading, session state and transition resolution |
+| `steps` | Step types and runtime validation of step-specific `userInput` against JSON Schema |
+| `integrations` | Outbound connectors (CAPTCHA, SMS/OTP, risk, etc.) with fault-tolerance policies |
+| `persistence` | Plain JDBC repositories and Liquibase-managed schema |
+| `security` | Session tokens, CAPTCHA verification hooks, input/PII protection |
+| `config` | Typed configuration mappings and application wiring |
+
 ## Updating SDD documents after T001
 
 Download the new archive as `~/Downloads/onboarding-engine-sdd.zip`, then run `./scripts/update_sdd.sh` from the repository root. The script updates only `docs/` and `specs/` and preserves application code and the root README.
