@@ -35,6 +35,7 @@ dependencies {
 
     testImplementation("io.quarkus:quarkus-junit5")
     testImplementation("io.rest-assured:rest-assured")
+    testImplementation("org.assertj:assertj-core:3.27.7")
     testImplementation("org.testcontainers:testcontainers-postgresql:2.0.2")
 }
 

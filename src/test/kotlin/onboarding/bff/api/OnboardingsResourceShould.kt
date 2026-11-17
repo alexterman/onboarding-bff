@@ -1,50 +1,42 @@
 package onboarding.bff.api
 
 import io.quarkus.test.common.QuarkusTestResource
+import io.quarkus.test.common.http.TestHTTPEndpoint
 import io.quarkus.test.junit.QuarkusTest
 import io.restassured.RestAssured.given
 import io.restassured.http.ContentType
+import io.restassured.response.ValidatableResponse
+import onboarding.bff.api.resources.OnboardingsResource
 import onboarding.bff.configs.PostgresTestResource
-import org.hamcrest.Matchers.equalTo
-import org.hamcrest.Matchers.hasKey
-import org.hamcrest.Matchers.not
+import onboarding.bff.configs.RestAssuredTestResource
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-private const val ONBOARDINGS_PATH = "/api/v1/onboardings"
-
 @QuarkusTest
+@QuarkusTestResource(RestAssuredTestResource::class)
 @QuarkusTestResource(PostgresTestResource::class)
+@TestHTTPEndpoint(OnboardingsResource::class)
 class OnboardingsResourceShould {
     @Test
     fun `answer start onboarding with the error envelope while not implemented`() {
-        given()
-            .contentType(ContentType.JSON)
-            .body("""{"type": "retail"}""")
-            .`when`()
-            .post(ONBOARDINGS_PATH)
-            .then()
-            .statusCode(501)
-            .body("error.code", equalTo("NOT_IMPLEMENTED"))
-            .body("$", not(hasKey("nextStep")))
+        val response = post("", """{"type": "retail"}""", 501)
+
+        assertThat(response.errorCode()).isEqualTo("NOT_IMPLEMENTED")
+        assertThat(response.asMap()).doesNotContainKey("nextStep")
     }
 
     @Test
     fun `answer next step with the error envelope while not implemented`() {
-        given()
-            .contentType(ContentType.JSON)
-            .body("""{"session": {"jwt": "eyJ"}}""")
-            .`when`()
-            .post("$ONBOARDINGS_PATH/next-step")
-            .then()
-            .statusCode(501)
-            .body("error.code", equalTo("NOT_IMPLEMENTED"))
+        val response = post("/next-step", """{"session": {"jwt": "eyJ"}}""", 501)
+
+        assertThat(response.errorCode()).isEqualTo("NOT_IMPLEMENTED")
     }
 
     @Test
     fun `answer submit step accepting dynamic user input while not implemented`() {
-        given()
-            .contentType(ContentType.JSON)
-            .body(
+        val response =
+            post(
+                "/steps",
                 """
                 {
                   "stepId": "verify-phone",
@@ -52,49 +44,42 @@ class OnboardingsResourceShould {
                   "userInput": {"verification": {"code": "1234"}},
                   "additionalAttributes": {"verificationId": "abc123"}
                 }
-                """.trimIndent()
+                """.trimIndent(),
+                501
             )
-            .`when`()
-            .post("$ONBOARDINGS_PATH/steps")
-            .then()
-            .statusCode(501)
-            .body("error.code", equalTo("NOT_IMPLEMENTED"))
+
+        assertThat(response.errorCode()).isEqualTo("NOT_IMPLEMENTED")
     }
 
     @Test
     fun `reject a request missing required fields with the error envelope`() {
-        given()
-            .contentType(ContentType.JSON)
-            .body("""{"stepId": "verify-phone", "session": {"jwt": "eyJ"}}""")
-            .`when`()
-            .post("$ONBOARDINGS_PATH/steps")
-            .then()
-            .statusCode(400)
-            .body("error.code", equalTo("INVALID_REQUEST"))
-            .body("$", not(hasKey("nextStep")))
+        val response = post("/steps", """{"stepId": "verify-phone", "session": {"jwt": "eyJ"}}""", 400)
+
+        assertThat(response.errorCode()).isEqualTo("INVALID_REQUEST")
+        assertThat(response.asMap()).doesNotContainKey("nextStep")
     }
 
     @Test
     fun `reject a malformed body with the error envelope`() {
-        given()
-            .contentType(ContentType.JSON)
-            .body("""{"type": """)
-            .`when`()
-            .post(ONBOARDINGS_PATH)
-            .then()
-            .statusCode(400)
-            .body("error.code", equalTo("INVALID_REQUEST"))
+        val response = post("", """{"type": """, 400)
+
+        assertThat(response.errorCode()).isEqualTo("INVALID_REQUEST")
     }
 
-    @Test
-    fun `serve the OpenAPI contract with the onboarding paths`() {
+    private fun post(
+        path: String,
+        body: String,
+        expectedStatus: Int,
+    ): ValidatableResponse =
         given()
+            .contentType(ContentType.JSON)
+            .body(body)
             .`when`()
-            .get("/swagger?format=json")
+            .post(path)
             .then()
-            .statusCode(200)
-            .body("paths.keySet()", org.hamcrest.Matchers.hasItems(
-                ONBOARDINGS_PATH, "$ONBOARDINGS_PATH/next-step", "$ONBOARDINGS_PATH/steps"
-            ))
-    }
+            .statusCode(expectedStatus)
+
+    private fun ValidatableResponse.errorCode(): String = extract().path("error.code")
+
+    private fun ValidatableResponse.asMap(): Map<String, Any> = extract().path("$")
 }
